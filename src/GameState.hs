@@ -65,7 +65,12 @@ teleportThroughWalls (x, y) = (newX, newY)
       | y < -300 = 285
       | otherwise = y
 
-changeDirection newDirection game = game {direction = newDirection}
+changeDirection (x, y) game = game {direction = updatedDirection}
+  where
+    updatedDirection =
+      if x /= (-1 * (fst $ direction game))
+        then (x, y)
+        else direction game
 
 handleKeys (EventKey (SpecialKey KeyUp) _ _ _) game =
   changeDirection (0, 1) game
