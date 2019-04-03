@@ -27,12 +27,23 @@ nextFrame _ game = game {snakePosition = nextSnakePosition}
   where
     nextSnakePosition = moveSnake (direction game) (snakePosition game)
 
-moveSnake direction snakePosition = nextPosition
+moveSnake (dirX, dirY) snakePosition = nextPosition
   where
-    (dirX, dirY) = direction
     (headX, headY) = head snakePosition
     newHead = (headX + (dirX * snakeSize), headY + (dirY * snakeSize))
-    nextPosition = newHead : init snakePosition
+    newHeadAfterWallCollision = teleportThroughWalls newHead
+    nextPosition = newHeadAfterWallCollision : init snakePosition
+
+teleportThroughWalls (x, y) = (newX, newY)
+  where
+    newX
+      | x > 300 = -285
+      | x < -300 = 285
+      | otherwise = x
+    newY
+      | y > 300 = -285
+      | y < -300 = 285
+      | otherwise = y
 
 changeDirection newDirection game = game {direction = newDirection}
 
