@@ -11,7 +11,15 @@ data SnakeGame = Game
 
 initialState =
   Game
-    { snakePosition = [(-285, 285), (-270, 285), (-255, 285)]
+    { snakePosition =
+        [ (-195, 285)
+        , (-210, 285)
+        , (-225, 285)
+        , (-240, 285)
+        , (-255, 285)
+        , (-270, 285)
+        , (-285, 285)
+        ]
     , direction = (1, 0)
     }
 
@@ -23,16 +31,28 @@ renderSnakeBodyPart (x, y) = translate x y $ rectangleSolid snakeSize snakeSize
 
 renderFullSnake snakePosition = pictures $ map renderSnakeBodyPart snakePosition
 
-nextFrame _ game = game {snakePosition = nextSnakePosition}
+nextFrame _ game = checkGameOver $ game {snakePosition = nextSnakePosition}
   where
     nextSnakePosition = moveSnake (direction game) (snakePosition game)
 
 moveSnake (dirX, dirY) snakePosition = nextPosition
   where
     (headX, headY) = head snakePosition
-    newHead = (headX + (dirX * snakeSize), headY + (dirY * snakeSize))
-    newHeadAfterWallCollision = teleportThroughWalls newHead
-    nextPosition = newHeadAfterWallCollision : init snakePosition
+    newHead =
+      teleportThroughWalls $
+      (headX + (dirX * snakeSize), headY + (dirY * snakeSize))
+    nextPosition = newHead : init snakePosition
+
+checkCollisionWithOwnBody snakePosition = collides
+  where
+    snakeHead = head snakePosition
+    collides = elem snakeHead $ tail snakePosition
+
+checkGameOver game
+  | collidesWithOwnBody = initialState
+  | otherwise = game
+  where
+    collidesWithOwnBody = checkCollisionWithOwnBody $ snakePosition game
 
 teleportThroughWalls (x, y) = (newX, newY)
   where
