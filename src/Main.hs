@@ -1,13 +1,14 @@
 module Main where
 
-import Graphics.Gloss
+import           GameState
+import           Graphics.Gloss
 
 width, height, offset :: Int
 width = 600
 
 height = 600
 
-offset = 100
+offset = 60
 
 window :: Display
 window = InWindow "Snake" (width, height) (offset, offset)
@@ -15,5 +16,8 @@ window = InWindow "Snake" (width, height) (offset, offset)
 backgroundColor :: Color
 backgroundColor = light $ light $ blue
 
+fps = 60 :: Int
+
 main :: IO ()
-main = display window backgroundColor $ thickCircle 10 80
+main =
+  play window backgroundColor fps initialState renderGame handleKeys nextFrame
