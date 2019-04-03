@@ -16,7 +16,7 @@ window = InWindow "Snake" (width, height) (offset, offset)
 backgroundColor :: Color
 backgroundColor = light $ light $ blue
 
-fps = 60 :: Int
+fps = 5 :: Int
 
 main :: IO ()
 main =
