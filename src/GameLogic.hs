@@ -27,15 +27,7 @@ snakeSize = 30 :: Float
 
 initialState seed =
   Game
-    { snakeBody =
-        [ (-195, 285)
-        , (-210, 285)
-        , (-225, 285)
-        , (-240, 285)
-        , (-255, 285)
-        , (-270, 285)
-        , (-285, 285)
-        ]
+    { snakeBody = [(-195, 285), (-210, 285), (-225, 285)]
     , direction = right
     , food = head foodList
     , nextFoodList = tail foodList

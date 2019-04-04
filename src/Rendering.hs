@@ -12,17 +12,20 @@ offset = 60
 
 window = InWindow "Snake" (width, height) (offset, offset)
 
-backgroundColor = light $ light $ blue
+backgroundColor = greyN 0.8
 
 fps = 5 :: Int
 
-renderGame game = pictures [snake, snakeFood]
+renderGame game = pictures [snake, food]
   where
-    snake = renderFullSnake (snakeBody game)
-    snakeFood = renderFood (food game)
+    snake = renderFullSnake game
+    food = renderFood game
 
-renderSnakeBodyPart (x, y) = translate x y $ rectangleSolid snakeSize snakeSize
+renderSnakeBodyPart location =
+  uncurry translate location $
+  color ((dark . dark) green) $ rectangleWire snakeSize snakeSize
 
-renderFullSnake snakeBody = pictures $ map renderSnakeBodyPart snakeBody
+renderFullSnake game = pictures $ map renderSnakeBodyPart (snakeBody game)
 
-renderFood (x, y) = translate x y $ rectangleSolid snakeSize snakeSize
+renderFood game =
+  uncurry translate (food game) $ color red $ rectangleSolid snakeSize snakeSize
