@@ -25,10 +25,14 @@ right = (1, 0)
 
 snakeSize = 30 :: Float
 
+initialSnakeBody = [(-195, 285), (-210, 285), (-225, 285)]
+
+initialDirection = right
+
 initialState seed =
   Game
-    { snakeBody = [(-195, 285), (-210, 285), (-225, 285)]
-    , direction = right
+    { snakeBody = initialSnakeBody
+    , direction = initialDirection
     , food = head foodList
     , nextFoodList = tail foodList
     }
@@ -41,7 +45,7 @@ getFoodList seed = foodListFromRands ((randomRs (-10, 10) seed) :: [Float])
     foodListFromRands (x:y:rest) = foodify (x, y) : (foodListFromRands rest)
     foodify = mapTuple (\x -> (fromIntegral $ floor x) * 30 + 15)
 
-moveSnake game = game {snakeBody = nextLocation}
+moveSnake game = eatFood $ game {snakeBody = nextLocation}
   where
     currentLocation = snakeBody game
     (headX, headY) = head currentLocation
@@ -52,10 +56,30 @@ moveSnake game = game {snakeBody = nextLocation}
       , headY + (fromIntegral dirY * snakeSize))
     nextLocation = newHead : init currentLocation
 
+eatFood game
+  | eaten =
+    growSnake $
+    game
+      {food = head $ nextFoodList game, nextFoodList = tail $ nextFoodList game}
+  | otherwise = game
+  where
+    eaten = head (snakeBody game) == food game
+
+growSnake game = game {snakeBody = newSnakeBody}
+  where
+    oldSnakeBody = snakeBody game
+    (headX, headY) = head $ oldSnakeBody
+    (dirX, dirY) = direction game
+    newSnakeBody =
+      ( headX + (fromIntegral dirX * snakeSize)
+      , headY + (fromIntegral dirY * snakeSize)) :
+      oldSnakeBody
+
 checkCollisionWithOwnBody (snakeHead:snakeTail) = elem snakeHead snakeTail
 
 checkGameOver game
-  | collidesWithOwnBody = game -- TODO Game over logic here
+  | collidesWithOwnBody =
+    game {snakeBody = initialSnakeBody, direction = initialDirection}
   | otherwise = game
   where
     collidesWithOwnBody = checkCollisionWithOwnBody $ snakeBody game
