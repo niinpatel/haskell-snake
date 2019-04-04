@@ -4,6 +4,7 @@ import           GameLogic
 import           Graphics.Gloss
 import           Graphics.Gloss.Interface.Pure.Game
 import           Rendering
+import           System.Random
 
 main :: IO ()
 main =
