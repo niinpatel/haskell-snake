@@ -64,7 +64,7 @@ teleportThroughWalls (x, y) = (newX, newY)
       | y < -300 = 285
       | otherwise = y
 
-changeDir (x, y) game = game {direction = updatedDirection}
+changeDirection (x, y) game = game {direction = updatedDirection}
   where
     updatedDirection =
       if x /= (-1 * (fst $ direction game))
@@ -72,3 +72,11 @@ changeDir (x, y) game = game {direction = updatedDirection}
         else direction game
 
 nextFrame _ game = checkGameOver $ moveSnake game
+
+keyPressed key game
+  | key == "ArrowUp" = changeDirection up game
+  | key == "ArrowDown" = changeDirection down game
+  | key == "ArrowRight" = changeDirection right game
+  | key == "ArrowLeft" = changeDirection left game
+  | key == "r" = initialState
+  | otherwise = game

@@ -7,12 +7,22 @@ import           Rendering
 
 main :: IO ()
 main =
-  play window backgroundColor fps initialState renderGame handleKeys nextFrame
+  play
+    window
+    backgroundColor
+    fps
+    initialState
+    renderGame
+    handleInputEvents
+    nextFrame
   where
-    handleKeys (EventKey (SpecialKey KeyUp) _ _ _) game = changeDir up game
-    handleKeys (EventKey (SpecialKey KeyDown) _ _ _) game = changeDir down game
-    handleKeys (EventKey (SpecialKey KeyLeft) _ _ _) game = changeDir left game
-    handleKeys (EventKey (SpecialKey KeyRight) _ _ _) game =
-      changeDir right game
-    handleKeys (EventKey (Char 'r') _ _ _) _ = initialState
-    handleKeys _ game = game
+    handleInputEvents (EventKey (SpecialKey KeyUp) _ _ _) game =
+      keyPressed "ArrowUp" game
+    handleInputEvents (EventKey (SpecialKey KeyDown) _ _ _) game =
+      keyPressed "ArrowDown" game
+    handleInputEvents (EventKey (SpecialKey KeyLeft) _ _ _) game =
+      keyPressed "ArrowLeft" game
+    handleInputEvents (EventKey (SpecialKey KeyRight) _ _ _) game =
+      keyPressed "ArrowRight" game
+    handleInputEvents (EventKey (Char 'r') _ _ _) game = keyPressed "r" game
+    handleInputEvents _ game = game
