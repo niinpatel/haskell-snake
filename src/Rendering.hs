@@ -16,10 +16,13 @@ backgroundColor = light $ light $ blue
 
 fps = 5 :: Int
 
-renderGame game = pictures [snake]
+renderGame game = pictures [snake, snakeFood]
   where
     snake = renderFullSnake (snakeBody game)
+    snakeFood = renderFood (food game)
 
 renderSnakeBodyPart (x, y) = translate x y $ rectangleSolid snakeSize snakeSize
 
 renderFullSnake snakeBody = pictures $ map renderSnakeBodyPart snakeBody
+
+renderFood (x, y) = translate x y $ rectangleSolid snakeSize snakeSize

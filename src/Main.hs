@@ -6,13 +6,14 @@ import           Graphics.Gloss.Interface.Pure.Game
 import           Rendering
 import           System.Random
 
-main :: IO ()
-main =
+main :: IO () 
+main = do 
+  seed <- getStdGen
   play
     window
     backgroundColor
     fps
-    initialState
+    (initialState seed)
     renderGame
     handleInputEvents
     nextFrame

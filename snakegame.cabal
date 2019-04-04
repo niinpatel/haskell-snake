@@ -18,7 +18,7 @@ extra-source-files:  CHANGELOG.md
 
 executable snakegame
   main-is:             Main.hs
-  other-modules:       GameLogic, Rendering
+  other-modules:       GameLogic, Rendering, Utils
   -- other-extensions:
   build-depends:       base >=4.12 && <4.13, gloss==1.13.*, random
   hs-source-dirs:      src

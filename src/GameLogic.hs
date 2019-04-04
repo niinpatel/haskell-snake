@@ -1,12 +1,17 @@
 module GameLogic where
 
+import           System.Random
+import           Utils
+
 type Location = (Float, Float)
 
 type Direction = (Int, Int)
 
 data SnakeGame = Game
-  { snakeBody :: [Location]
-  , direction :: Direction
+  { snakeBody    :: [Location]
+  , direction    :: Direction
+  , food         :: Location
+  , nextFoodList :: [Location]
   }
 
 up, down, left, right :: Direction
@@ -20,7 +25,7 @@ right = (1, 0)
 
 snakeSize = 30 :: Float
 
-initialState =
+initialState seed =
   Game
     { snakeBody =
         [ (-195, 285)
@@ -32,7 +37,17 @@ initialState =
         , (-285, 285)
         ]
     , direction = right
+    , food = head foodList
+    , nextFoodList = tail foodList
     }
+  where
+    foodList = getFoodList seed
+
+getFoodList :: StdGen -> [(Float, Float)]
+getFoodList seed = foodListFromRands ((randomRs (-10, 10) seed) :: [Float])
+  where
+    foodListFromRands (x:y:rest) = foodify (x, y) : (foodListFromRands rest)
+    foodify = mapTuple (\x -> (fromIntegral $ floor x) * 30 + 15)
 
 moveSnake game = game {snakeBody = nextLocation}
   where
@@ -48,7 +63,7 @@ moveSnake game = game {snakeBody = nextLocation}
 checkCollisionWithOwnBody (snakeHead:snakeTail) = elem snakeHead snakeTail
 
 checkGameOver game
-  | collidesWithOwnBody = initialState
+  | collidesWithOwnBody = game -- TODO Game over logic here
   | otherwise = game
   where
     collidesWithOwnBody = checkCollisionWithOwnBody $ snakeBody game
@@ -78,5 +93,4 @@ keyPressed key game
   | key == "ArrowDown" = changeDirection down game
   | key == "ArrowRight" = changeDirection right game
   | key == "ArrowLeft" = changeDirection left game
-  | key == "r" = initialState
   | otherwise = game
