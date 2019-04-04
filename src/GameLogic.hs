@@ -29,6 +29,9 @@ initialSnakeBody = [(-195, 285), (-210, 285), (-225, 285)]
 
 initialDirection = right
 
+resetGame game =
+  game {snakeBody = initialSnakeBody, direction = initialDirection}
+
 initialState seed =
   Game
     { snakeBody = initialSnakeBody
@@ -78,8 +81,7 @@ growSnake game = game {snakeBody = newSnakeBody}
 checkCollisionWithOwnBody (snakeHead:snakeTail) = elem snakeHead snakeTail
 
 checkGameOver game
-  | collidesWithOwnBody =
-    game {snakeBody = initialSnakeBody, direction = initialDirection}
+  | collidesWithOwnBody = resetGame game
   | otherwise = game
   where
     collidesWithOwnBody = checkCollisionWithOwnBody $ snakeBody game
@@ -109,4 +111,5 @@ keyPressed key game
   | key == "ArrowDown" = changeDirection down game
   | key == "ArrowRight" = changeDirection right game
   | key == "ArrowLeft" = changeDirection left game
+  | key == "r" = resetGame game
   | otherwise = game
