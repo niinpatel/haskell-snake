@@ -119,13 +119,13 @@ teleportThroughWalls (x, y) = (newX, newY)
       | otherwise = y
 
 nextFrame :: Float -> SnakeGame -> SnakeGame
-nextFrame _ game = (checkGameOver . checkFoodEaten . moveSnake) game
+nextFrame _ = checkGameOver . checkFoodEaten . moveSnake
 
 keyPressed :: String -> SnakeGame -> SnakeGame
-keyPressed key game
-  | key == "ArrowUp" = changeDirection up game
-  | key == "ArrowDown" = changeDirection down game
-  | key == "ArrowRight" = changeDirection right game
-  | key == "ArrowLeft" = changeDirection left game
-  | key == "r" = resetGame game
-  | otherwise = game
+keyPressed key
+  | key == "ArrowUp" = changeDirection up
+  | key == "ArrowDown" = changeDirection down
+  | key == "ArrowRight" = changeDirection right
+  | key == "ArrowLeft" = changeDirection left
+  | key == "r" = resetGame
+  | otherwise = id
