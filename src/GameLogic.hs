@@ -23,9 +23,7 @@ left = (-1, 0)
 
 right = (1, 0)
 
-snakeSize = 30 :: Float
-
-initialSnakeBody = [(-195, 285), (-210, 285), (-225, 285)]
+initialSnakeBody = [(-7, 9), (-8, 9), (-9, 9)]
 
 initialDirection = right
 
@@ -45,19 +43,21 @@ initialState seed =
 getFoodList :: StdGen -> [(Float, Float)]
 getFoodList seed = foodListFromRands ((randomRs (-10, 10) seed) :: [Float])
   where
-    foodListFromRands (x:y:rest) = foodify (x, y) : (foodListFromRands rest)
-    foodify = mapTuple (\x -> (fromIntegral $ floor x) * 30 + 15)
+    foodListFromRands (x:y:rest) =
+      mapTuple floorFloat (x, y) : (foodListFromRands rest)
 
-moveSnake game = eatFood $ game {snakeBody = nextLocation}
+getNextHead game =
+  teleportThroughWalls $
+  (headX + (fromIntegral dirX), headY + (fromIntegral dirY))
   where
-    currentLocation = snakeBody game
-    (headX, headY) = head currentLocation
+    (headX, headY) = head $ snakeBody game
     (dirX, dirY) = direction game
-    newHead =
-      teleportThroughWalls $
-      ( headX + (fromIntegral dirX * snakeSize)
-      , headY + (fromIntegral dirY * snakeSize))
-    nextLocation = newHead : init currentLocation
+
+moveSnake game = eatFood $ game {snakeBody = nextSnakeBody}
+  where
+    currentSnakeBody = snakeBody game
+    newHead = getNextHead game
+    nextSnakeBody = newHead : init currentSnakeBody
 
 eatFood game
   | eaten =
@@ -70,13 +70,9 @@ eatFood game
 
 growSnake game = game {snakeBody = newSnakeBody}
   where
-    oldSnakeBody = snakeBody game
-    (headX, headY) = head $ oldSnakeBody
-    (dirX, dirY) = direction game
-    newSnakeBody =
-      ( headX + (fromIntegral dirX * snakeSize)
-      , headY + (fromIntegral dirY * snakeSize)) :
-      oldSnakeBody
+    currentSnakeBody = snakeBody game
+    newHead = getNextHead game
+    newSnakeBody = newHead : currentSnakeBody
 
 checkCollisionWithOwnBody (snakeHead:snakeTail) = elem snakeHead snakeTail
 
@@ -89,12 +85,12 @@ checkGameOver game
 teleportThroughWalls (x, y) = (newX, newY)
   where
     newX
-      | x > 300 = -285
-      | x < -300 = 285
+      | x > 9 = -10
+      | x < -10 = 9
       | otherwise = x
     newY
-      | y > 300 = -285
-      | y < -300 = 285
+      | y > 9 = -10
+      | y < -10 = 9
       | otherwise = y
 
 changeDirection (x, y) game = game {direction = updatedDirection}
