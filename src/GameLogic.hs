@@ -1,18 +1,14 @@
 module GameLogic where
 
-import           System.Random
-import           Utils
+import           System.Random (StdGen, randomRs)
+import           Utils         (toFloats, toInts)
 
-type Location = (Float, Float)
+type Location = (Int, Int)
 
 type Direction = (Int, Int)
 
-data SnakeGame = Game
-  { snakeBody    :: [Location]
-  , direction    :: Direction
-  , food         :: Location
-  , nextFoodList :: [Location]
-  }
+gridCoordinatesRange :: (Int, Int)
+gridCoordinatesRange = (-10, 10) -- a 20 x 20 grid centered around origin
 
 up, down, left, right :: Direction
 up = (0, 1)
@@ -27,81 +23,105 @@ initialSnakeBody = [(-7, 9), (-8, 9), (-9, 9)]
 
 initialDirection = right
 
-resetGame game =
-  game {snakeBody = initialSnakeBody, direction = initialDirection}
+data SnakeGame = Game
+  { snakeBody :: [Location]
+  , direction :: Direction
+  , food      :: Location
+  , nextFoods :: [Location]
+  }
 
+initialState :: StdGen -> SnakeGame
 initialState seed =
   Game
     { snakeBody = initialSnakeBody
     , direction = initialDirection
     , food = head foodList
-    , nextFoodList = tail foodList
+    , nextFoods = tail foodList
     }
   where
-    foodList = getFoodList seed
+    foodList = getFoods seed
 
-getFoodList :: StdGen -> [(Float, Float)]
-getFoodList seed = foodListFromRands ((randomRs (-10, 10) seed) :: [Float])
+getFoods :: StdGen -> [Location]
+getFoods seed = generateFoods ((randomRs (toFloats gridCoordinatesRange) seed))
   where
-    foodListFromRands (x:y:rest) =
-      mapTuple floorFloat (x, y) : (foodListFromRands rest)
+    generateFoods :: [Float] -> [Location]
+    generateFoods (x:y:rest) = toInts (x, y) : (generateFoods rest)
 
-getNextHead game =
-  teleportThroughWalls $
-  (headX + (fromIntegral dirX), headY + (fromIntegral dirY))
+getNextHead :: SnakeGame -> Location
+getNextHead game = teleportThroughWalls nextHead
   where
-    (headX, headY) = head $ snakeBody game
+    (headX, headY) = (head . snakeBody) game
     (dirX, dirY) = direction game
+    nextHead = (headX + (dirX), headY + (dirY))
 
-moveSnake game = eatFood $ game {snakeBody = nextSnakeBody}
+moveSnake :: SnakeGame -> SnakeGame
+moveSnake game = game {snakeBody = nextSnakeBody}
   where
     currentSnakeBody = snakeBody game
-    newHead = getNextHead game
-    nextSnakeBody = newHead : init currentSnakeBody
+    nextHead = getNextHead game
+    nextSnakeBody = nextHead : init currentSnakeBody
 
-eatFood game
-  | eaten =
-    growSnake $
-    game
-      {food = head $ nextFoodList game, nextFoodList = tail $ nextFoodList game}
+growSnake :: SnakeGame -> SnakeGame
+growSnake game = game {snakeBody = nextSnakeBody}
+  where
+    currentSnakeBody = snakeBody game
+    nextHead = getNextHead game
+    nextSnakeBody = nextHead : currentSnakeBody
+
+checkFoodEaten :: SnakeGame -> SnakeGame
+checkFoodEaten game
+  | eaten = (growSnake . eatFood) game
   | otherwise = game
   where
+    eaten :: Bool
     eaten = head (snakeBody game) == food game
 
-growSnake game = game {snakeBody = newSnakeBody}
+eatFood :: SnakeGame -> SnakeGame
+eatFood game = game {food = head foodList, nextFoods = tail foodList}
   where
-    currentSnakeBody = snakeBody game
-    newHead = getNextHead game
-    newSnakeBody = newHead : currentSnakeBody
+    foodList = nextFoods game
 
-checkCollisionWithOwnBody (snakeHead:snakeTail) = elem snakeHead snakeTail
-
+checkGameOver :: SnakeGame -> SnakeGame
 checkGameOver game
   | collidesWithOwnBody = resetGame game
   | otherwise = game
   where
-    collidesWithOwnBody = checkCollisionWithOwnBody $ snakeBody game
+    collidesWithOwnBody :: Bool
+    collidesWithOwnBody = (checkCollisionWithOwnBody . snakeBody) game
 
-teleportThroughWalls (x, y) = (newX, newY)
-  where
-    newX
-      | x > 9 = -10
-      | x < -10 = 9
-      | otherwise = x
-    newY
-      | y > 9 = -10
-      | y < -10 = 9
-      | otherwise = y
-
+changeDirection :: Direction -> SnakeGame -> SnakeGame
 changeDirection (x, y) game = game {direction = updatedDirection}
   where
     updatedDirection =
-      if x /= (-1 * (fst $ direction game))
+      if x /= (-1 * (fst . direction) game) -- direction should change only orthogonal to its current direction
         then (x, y)
         else direction game
 
-nextFrame _ game = checkGameOver $ moveSnake game
+resetGame :: SnakeGame -> SnakeGame
+resetGame game =
+  game {snakeBody = initialSnakeBody, direction = initialDirection}
 
+checkCollisionWithOwnBody :: [Location] -> Bool
+checkCollisionWithOwnBody (snakeHead:snakeTail) = elem snakeHead snakeTail
+
+teleportThroughWalls :: Location -> Location
+teleportThroughWalls (x, y) = (newX, newY)
+  where
+    minimumNegative = fst gridCoordinatesRange
+    maximumPositive = snd gridCoordinatesRange
+    newX
+      | x >= maximumPositive = minimumNegative
+      | x < minimumNegative = maximumPositive - 1
+      | otherwise = x
+    newY
+      | y >= maximumPositive = minimumNegative
+      | y < minimumNegative = maximumPositive - 1
+      | otherwise = y
+
+nextFrame :: Float -> SnakeGame -> SnakeGame
+nextFrame _ game = (checkGameOver . checkFoodEaten . moveSnake) game
+
+keyPressed :: String -> SnakeGame -> SnakeGame
 keyPressed key game
   | key == "ArrowUp" = changeDirection up game
   | key == "ArrowDown" = changeDirection down game

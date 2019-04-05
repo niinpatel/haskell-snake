@@ -2,13 +2,20 @@ module Rendering where
 
 import           GameLogic
 import           Graphics.Gloss
+import           Utils
 
-gridSize = 30 :: Float
+tileSize = 30 :: Float
+
+calculateNumberOfTiles (low, high) = abs low + abs high
+
+numberOfTiles = calculateNumberOfTiles $ toFloats gridCoordinatesRange
+
+totalScreenSize = numberOfTiles * tileSize
 
 width, height, offset :: Int
-width = 600
+width = toInt totalScreenSize
 
-height = 600
+height = toInt totalScreenSize
 
 offset = 0
 
@@ -18,19 +25,25 @@ backgroundColor = greyN 0.8
 
 fps = 5 :: Int
 
-renderGame game = pictures [snake, food]
+drawGame :: SnakeGame -> Picture
+drawGame game = pictures [snakepicture, foodpicture]
   where
-    snake = renderFullSnake game
-    food = renderFood game
+    snakepicture = drawSnakeBody (map getPoint $ snakeBody game)
+    foodpicture = drawFood $ getPoint $ food game
 
-renderSnakeBodyPart (x, y) =
-  translate ((x * gridSize) + 15) ((y * gridSize) + 15) $
-  color ((dark . dark) green) $ rectangleWire gridSize gridSize
+drawFood :: Point -> Picture
+drawFood = draw red rectangleSolid tileSize
 
-renderFullSnake game = pictures $ map renderSnakeBodyPart (snakeBody game)
+drawSnakeBody :: [Point] -> Picture
+drawSnakeBody = pictures . map drawSnakeBodyPart
 
-renderFood game =
-  translate ((x * gridSize) + 15) ((y * gridSize) + 15) $
-  color red $ rectangleSolid gridSize gridSize
-  where
-    (x, y) = food game
+drawSnakeBodyPart :: Point -> Picture
+drawSnakeBodyPart = draw (dark $ dark green) rectangleWire tileSize
+
+type Shape = (Float -> Float -> Picture)
+
+draw :: Color -> Shape -> Float -> Point -> Picture
+draw col shape size (x, y) = translate x y $ color col $ shape size size
+
+getPoint :: (Int, Int) -> Point
+getPoint = mapTuple ((+ tileSize / 2) . (* tileSize)) . toFloats
