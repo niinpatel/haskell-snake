@@ -7,6 +7,10 @@ type Location = (Int, Int)
 
 type Direction = (Int, Int)
 
+type Snake = [Location]
+
+type Food = Location
+
 gridCoordinatesRange :: (Int, Int)
 gridCoordinatesRange = (-10, 10) -- a 20 x 20 grid centered around origin
 
@@ -24,10 +28,10 @@ initialSnakeBody = [(-7, 9), (-8, 9), (-9, 9)]
 initialDirection = right
 
 data SnakeGame = Game
-  { snakeBody :: [Location]
+  { snakeBody :: Snake
   , direction :: Direction
-  , food      :: Location
-  , nextFoods :: [Location]
+  , food      :: Food
+  , nextFoods :: [Food]
   }
 
 initialState :: StdGen -> SnakeGame
@@ -41,10 +45,10 @@ initialState seed =
   where
     foodList = getFoods seed
 
-getFoods :: StdGen -> [Location]
+getFoods :: StdGen -> [Food]
 getFoods seed = generateFoods ((randomRs (toFloats gridCoordinatesRange) seed))
   where
-    generateFoods :: [Float] -> [Location]
+    generateFoods :: [Float] -> [Food]
     generateFoods (x:y:rest) = toInts (x, y) : (generateFoods rest)
 
 getNextHead :: SnakeGame -> Location
@@ -101,7 +105,7 @@ resetGame :: SnakeGame -> SnakeGame
 resetGame game =
   game {snakeBody = initialSnakeBody, direction = initialDirection}
 
-checkCollisionWithOwnBody :: [Location] -> Bool
+checkCollisionWithOwnBody :: Snake -> Bool
 checkCollisionWithOwnBody (snakeHead:snakeTail) = elem snakeHead snakeTail
 
 teleportThroughWalls :: Location -> Location

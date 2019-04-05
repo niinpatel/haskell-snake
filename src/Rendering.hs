@@ -45,5 +45,5 @@ type Shape = (Float -> Float -> Picture)
 draw :: Color -> Shape -> Float -> Point -> Picture
 draw col shape size (x, y) = translate x y $ color col $ shape size size
 
-getPoint :: (Int, Int) -> Point
+getPoint :: Location -> Point
 getPoint = mapTuple ((+ tileSize / 2) . (* tileSize)) . toFloats
