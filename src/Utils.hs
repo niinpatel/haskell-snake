@@ -7,7 +7,7 @@ toInt :: Float -> Int
 toInt = floor
 
 toFloats :: (Int, Int) -> (Float, Float)
-toFloats tuple = mapTuple fromIntegral tuple
+toFloats = mapTuple fromIntegral
 
 toInts :: (Float, Float) -> (Int, Int)
-toInts tuple = mapTuple toInt tuple
+toInts = mapTuple toInt

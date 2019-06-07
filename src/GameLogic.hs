@@ -46,17 +46,17 @@ initialState seed =
     foodList = getFoods seed
 
 getFoods :: StdGen -> [Food]
-getFoods seed = generateFoods ((randomRs (toFloats gridCoordinatesRange) seed))
+getFoods seed = generateFoods (randomRs (toFloats gridCoordinatesRange) seed)
   where
     generateFoods :: [Float] -> [Food]
-    generateFoods (x:y:rest) = toInts (x, y) : (generateFoods rest)
+    generateFoods (x:y:rest) = toInts (x, y) : generateFoods rest
 
 getNextHead :: SnakeGame -> Location
 getNextHead game = teleportThroughWalls nextHead
   where
     (headX, headY) = (head . snakeBody) game
     (dirX, dirY) = direction game
-    nextHead = (headX + (dirX), headY + (dirY))
+    nextHead = (headX + dirX, headY + dirY)
 
 moveSnake :: SnakeGame -> SnakeGame
 moveSnake game = game {snakeBody = nextSnakeBody}
@@ -106,7 +106,7 @@ resetGame game =
   game {snakeBody = initialSnakeBody, direction = initialDirection}
 
 checkCollisionWithOwnBody :: Snake -> Bool
-checkCollisionWithOwnBody (snakeHead:snakeTail) = elem snakeHead snakeTail
+checkCollisionWithOwnBody (snakeHead:snakeTail) = snakeHead `elem` snakeTail
 
 teleportThroughWalls :: Location -> Location
 teleportThroughWalls (x, y) = (newX, newY)
